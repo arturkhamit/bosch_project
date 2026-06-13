@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 
-from app.services.report import (get_quality_summary, )
+from app.services.report_service import (get_quality_summary, )
 
 report_bp = Blueprint("report_bp", __name__)
 

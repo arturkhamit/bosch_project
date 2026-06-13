@@ -28,7 +28,7 @@ def get_all_defects():
             "inspection_id": defect.inspection_id,
         })
 
-    return result
+    return result, 200
 
 def create_defects_from_json(data):
     added_defects = []
@@ -71,8 +71,123 @@ def create_defects_from_json(data):
             db.session.rollback()
             incorrect_defects.append(defect_json)
 
-    return {
+    result = {
         "added_defects": added_defects,
         "existing_defects": existing_defects,
         "incorrect_defects": incorrect_defects,
     }
+
+    if added_defects:
+        return result, 201
+
+    if incorrect_defects and not existing_defects:
+        return result, 400
+
+    return result, 200
+
+def update_defect(defect_id, data):
+    defect = db.session.get(Defect, defect_id)
+
+    if defect is None:
+        return {
+            "error": "Defect not found."
+        }, 404
+
+    try:
+        if "defect_code" in data:
+            defect.defect_code = data["defect_code"]
+
+        if "defect_type" in data:
+            defect.defect_type = data["defect_type"]
+
+        if "severity" in data:
+            defect.severity = DefectSeverityEnum(data["severity"])
+
+        if "status" in data:
+            defect.status = DefectStatusEnum(data["status"])
+
+        if "description" in data:
+            defect.description = data["description"]
+
+        if "detected_at" in data:
+            defect.detected_at = datetime.fromisoformat(data["detected_at"])
+
+        if "resolved_at" in data:
+            defect.resolved_at = datetime.fromisoformat(data["resolved_at"]) if data["resolved_at"] else None
+
+        if "root_cause" in data:
+            defect.root_cause = data["root_cause"]
+
+        if "corrective_action" in data:
+            defect.corrective_action = data["corrective_action"]
+
+        if "product_id" in data:
+            defect.product_id = data["product_id"]
+
+        if "inspection_id" in data:
+            defect.inspection_id = data["inspection_id"]
+
+        db.session.commit()
+
+        return {
+            "updated_defect": {
+                "id": defect.id,
+                "defect_code": defect.defect_code,
+                "defect_type": defect.defect_type,
+                "severity": defect.severity.value,
+                "status": defect.status.value,
+                "description": defect.description,
+                "detected_at": defect.detected_at.isoformat() if defect.detected_at else None,
+                "resolved_at": defect.resolved_at.isoformat() if defect.resolved_at else None,
+                "root_cause": defect.root_cause,
+                "corrective_action": defect.corrective_action,
+                "product_id": defect.product_id,
+                "inspection_id": defect.inspection_id,
+            }
+        }, 200
+
+    except ValueError:
+        db.session.rollback()
+
+        return {
+            "error": "Invalid datetime, severity, or status value."
+        }, 400
+
+    except IntegrityError:
+        db.session.rollback()
+
+        return {
+            "error": "Database integrity error. Check product_id and inspection_id."
+        }, 409
+
+    except SQLAlchemyError:
+        db.session.rollback()
+
+        return {
+            "error": "Database error."
+        }, 500
+
+
+def delete_defect(defect_id):
+    defect = db.session.get(Defect, defect_id)
+
+    if defect is None:
+        return {
+            "error": "Defect not found."
+        }, 404
+
+    try:
+        db.session.delete(defect)
+        db.session.commit()
+
+        return {
+            "message": "Defect deleted.",
+            "defect_id": defect_id,
+        }, 200
+
+    except SQLAlchemyError:
+        db.session.rollback()
+
+        return {
+            "error": "Database error."
+        }, 500
