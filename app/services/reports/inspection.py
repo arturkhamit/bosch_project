@@ -7,20 +7,15 @@ from app.services.inspection_service import create_inspections_from_json
 
 
 def get_inspection_summary_report():
-    inspections = Inspection.query.all()
-
-    rows = []
-
-    for inspection in inspections:
-        rows.append({
-            "id": inspection.id,
-            "batch_number": inspection.batch_number,
-            "serial_number": inspection.serial_number,
-            "inspection_date": inspection.inspection_date,
-            "result": inspection.result.value,
-            "product_id": inspection.product_id,
-            "inspector_id": inspection.inspector_id,
-        })
+    rows = Inspection.query.with_entities(
+        Inspection.id,
+        Inspection.batch_number,
+        Inspection.serial_number,
+        Inspection.inspection_date,
+        Inspection.result,
+        Inspection.product_id,
+        Inspection.inspector_id,
+    ).all()
 
     if not rows:
         return {
@@ -33,7 +28,18 @@ def get_inspection_summary_report():
             "warning_rate": 0,
         }, 200
 
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame([
+        {
+            "id": row.id,
+            "batch_number": row.batch_number,
+            "serial_number": row.serial_number,
+            "inspection_date": row.inspection_date,
+            "result": row.result.value,
+            "product_id": row.product_id,
+            "inspector_id": row.inspector_id,
+        }
+        for row in rows
+    ])
 
     total_inspections = len(df)
 
@@ -53,24 +59,32 @@ def get_inspection_summary_report():
 
 
 def export_inspections_report(file_format):
-    inspections = Inspection.query.all()
+    rows = Inspection.query.with_entities(
+        Inspection.id,
+        Inspection.batch_number,
+        Inspection.serial_number,
+        Inspection.inspection_date,
+        Inspection.result,
+        Inspection.notes,
+        Inspection.product_id,
+        Inspection.inspector_id,
+        Inspection.created_at,
+    ).all()
 
-    rows = []
-
-    for inspection in inspections:
-        rows.append({
-            "id": inspection.id,
-            "batch_number": inspection.batch_number,
-            "serial_number": inspection.serial_number,
-            "inspection_date": inspection.inspection_date.isoformat() if inspection.inspection_date else None,
-            "result": inspection.result.value,
-            "notes": inspection.notes,
-            "product_id": inspection.product_id,
-            "inspector_id": inspection.inspector_id,
-            "created_at": inspection.created_at.isoformat() if inspection.created_at else None,
-        })
-
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame([
+        {
+            "id": row.id,
+            "batch_number": row.batch_number,
+            "serial_number": row.serial_number,
+            "inspection_date": row.inspection_date.isoformat() if row.inspection_date else None,
+            "result": row.result.value,
+            "notes": row.notes,
+            "product_id": row.product_id,
+            "inspector_id": row.inspector_id,
+            "created_at": row.created_at.isoformat() if row.created_at else None,
+        }
+        for row in rows
+    ])
 
     if file_format == "csv":
         stream = BytesIO(df.to_csv(index=False).encode("utf-8"))

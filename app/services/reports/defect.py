@@ -58,35 +58,47 @@ def get_defect_pareto_report(group_by="defect_type"):
 
 
 def get_open_defects_report():
-    defects = Defect.query.filter(
+    rows = Defect.query.with_entities(
+        Defect.id,
+        Defect.defect_code,
+        Defect.defect_type,
+        Defect.severity,
+        Defect.status,
+        Defect.description,
+        Defect.detected_at,
+        Defect.resolved_at,
+        Defect.root_cause,
+        Defect.corrective_action,
+        Defect.product_id,
+        Defect.inspection_id,
+    ).filter(
         Defect.status.in_([
             DefectStatusEnum.OPEN,
             DefectStatusEnum.IN_PROGRESS,
         ])
     ).all()
 
-    rows = []
-
-    for defect in defects:
-        rows.append({
-            "id": defect.id,
-            "defect_code": defect.defect_code,
-            "defect_type": defect.defect_type,
-            "severity": defect.severity.value,
-            "status": defect.status.value,
-            "description": defect.description,
-            "detected_at": defect.detected_at.isoformat() if defect.detected_at else None,
-            "resolved_at": defect.resolved_at.isoformat() if defect.resolved_at else None,
-            "root_cause": defect.root_cause,
-            "corrective_action": defect.corrective_action,
-            "product_id": defect.product_id,
-            "inspection_id": defect.inspection_id,
-        })
-
     if not rows:
         return [], 200
 
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame([
+        {
+            "id": row.id,
+            "defect_code": row.defect_code,
+            "defect_type": row.defect_type,
+            "severity": row.severity.value,
+            "status": row.status.value,
+            "description": row.description,
+            "detected_at": row.detected_at.isoformat() if row.detected_at else None,
+            "resolved_at": row.resolved_at.isoformat() if row.resolved_at else None,
+            "root_cause": row.root_cause,
+            "corrective_action": row.corrective_action,
+            "product_id": row.product_id,
+            "inspection_id": row.inspection_id,
+        }
+        for row in rows
+    ])
+
 
     df = df.sort_values(
         by=["severity", "detected_at"],
@@ -97,28 +109,40 @@ def get_open_defects_report():
 
 
 def export_defects_report(file_format):
-    defects = Defect.query.all()
+    rows = Defect.query.with_entities(
+        Defect.id,
+        Defect.defect_code,
+        Defect.defect_type,
+        Defect.severity,
+        Defect.status,
+        Defect.description,
+        Defect.detected_at,
+        Defect.resolved_at,
+        Defect.root_cause,
+        Defect.corrective_action,
+        Defect.product_id,
+        Defect.inspection_id,
+        Defect.created_at,
+    ).all()
 
-    rows = []
-
-    for defect in defects:
-        rows.append({
-            "id": defect.id,
-            "defect_code": defect.defect_code,
-            "defect_type": defect.defect_type,
-            "severity": defect.severity.value,
-            "status": defect.status.value,
-            "description": defect.description,
-            "detected_at": defect.detected_at.isoformat() if defect.detected_at else None,
-            "resolved_at": defect.resolved_at.isoformat() if defect.resolved_at else None,
-            "root_cause": defect.root_cause,
-            "corrective_action": defect.corrective_action,
-            "product_id": defect.product_id,
-            "inspection_id": defect.inspection_id,
-            "created_at": defect.created_at.isoformat() if defect.created_at else None,
-        })
-
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame([
+        {
+            "id": row.id,
+            "defect_code": row.defect_code,
+            "defect_type": row.defect_type,
+            "severity": row.severity.value,
+            "status": row.status.value,
+            "description": row.description,
+            "detected_at": row.detected_at.isoformat() if row.detected_at else None,
+            "resolved_at": row.resolved_at.isoformat() if row.resolved_at else None,
+            "root_cause": row.root_cause,
+            "corrective_action": row.corrective_action,
+            "product_id": row.product_id,
+            "inspection_id": row.inspection_id,
+            "created_at": row.created_at.isoformat() if row.created_at else None,
+        }
+        for row in rows
+    ])
 
     if file_format == "csv":
         stream = BytesIO(df.to_csv(index=False).encode("utf-8"))
