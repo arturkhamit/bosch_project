@@ -2,9 +2,212 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hello world!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bosch Quality API</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script defer src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
+    <h1>Bosch Quality API</h1>
+    <p>Super basic HTML frontend for all existing endpoints. Use the buttons/forms below to call the Flask JSON API.</p>
 
+    <nav>
+        <a href="#product">Products</a>
+        <a href="#inspector">Inspectors</a>
+        <a href="#inspection">Inspections</a>
+        <a href="#defect">Defects</a>
+        <a href="#report">Reports</a>
+        <a href="#generic">Generic caller</a>
+    </nav>
+
+    <section id="output-section">
+        <h2>Response</h2>
+        <pre id="output">Click any button to call an endpoint.</pre>
+    </section>
+
+    <section id="product">
+        <h2>Products</h2>
+        <button data-request-method="GET" data-request-path="/product/">GET /product/</button>
+
+        <h3>POST /product/</h3>
+        <p>Body must be a JSON list.</p>
+        <textarea id="product-create">[
+  {
+    "product_code": "P-100",
+    "name": "Sample product",
+    "product_family": "Demo family",
+    "revision": "A",
+    "is_active": true
+  }
+]</textarea>
+        <button data-json-method="POST" data-json-path="/product/" data-json-textarea="product-create">Create products</button>
+
+        <h3>PATCH /product/&lt;id&gt;</h3>
+        <input id="product-patch-id" type="number" placeholder="Product ID">
+        <textarea id="product-patch">{
+  "name": "Updated product name",
+  "revision": "B",
+  "is_active": true
+}</textarea>
+        <button data-patch-prefix="/product/" data-patch-id="product-patch-id" data-patch-textarea="product-patch">Update product</button>
+
+        <h3>DELETE /product/&lt;id&gt;</h3>
+        <input id="product-delete-id" type="number" placeholder="Product ID">
+        <button data-delete-prefix="/product/" data-delete-id="product-delete-id">Delete product</button>
+    </section>
+
+    <section id="inspector">
+        <h2>Inspectors</h2>
+        <button data-request-method="GET" data-request-path="/inspector/">GET /inspector/</button>
+
+        <h3>POST /inspector/</h3>
+        <p>Body must be a JSON list.</p>
+        <textarea id="inspector-create">[
+  {
+    "employee_number": "E-100",
+    "first_name": "Alex",
+    "last_name": "Inspector",
+    "email": "alex.inspector@example.com",
+    "department": "Quality",
+    "role": "QA Inspector",
+    "is_active": true
+  }
+]</textarea>
+        <button data-json-method="POST" data-json-path="/inspector/" data-json-textarea="inspector-create">Create inspectors</button>
+
+        <h3>PATCH /inspector/&lt;id&gt;</h3>
+        <input id="inspector-patch-id" type="number" placeholder="Inspector ID">
+        <textarea id="inspector-patch">{
+  "department": "Quality Control",
+  "role": "Senior QA Inspector",
+  "is_active": true
+}</textarea>
+        <button data-patch-prefix="/inspector/" data-patch-id="inspector-patch-id" data-patch-textarea="inspector-patch">Update inspector</button>
+
+        <h3>DELETE /inspector/&lt;id&gt;</h3>
+        <input id="inspector-delete-id" type="number" placeholder="Inspector ID">
+        <button data-delete-prefix="/inspector/" data-delete-id="inspector-delete-id">Delete inspector</button>
+    </section>
+
+    <section id="inspection">
+        <h2>Inspections</h2>
+        <button data-request-method="GET" data-request-path="/inspection/">GET /inspection/</button>
+
+        <h3>POST /inspection/</h3>
+        <p>Body must be a JSON list. Create products and inspectors first, then use their IDs.</p>
+        <textarea id="inspection-create">[
+  {
+    "batch_number": "BATCH-100",
+    "serial_number": "SN-100",
+    "inspection_date": "2026-06-15T10:00:00",
+    "result": "PASS",
+    "notes": "Sample inspection",
+    "product_id": 1,
+    "inspector_id": 1
+  }
+]</textarea>
+        <button data-json-method="POST" data-json-path="/inspection/" data-json-textarea="inspection-create">Create inspections</button>
+
+        <h3>PATCH /inspection/&lt;id&gt;</h3>
+        <input id="inspection-patch-id" type="number" placeholder="Inspection ID">
+        <textarea id="inspection-patch">{
+  "result": "WARNING",
+  "notes": "Updated notes"
+}</textarea>
+        <button data-patch-prefix="/inspection/" data-patch-id="inspection-patch-id" data-patch-textarea="inspection-patch">Update inspection</button>
+
+        <h3>DELETE /inspection/&lt;id&gt;</h3>
+        <input id="inspection-delete-id" type="number" placeholder="Inspection ID">
+        <button data-delete-prefix="/inspection/" data-delete-id="inspection-delete-id">Delete inspection</button>
+    </section>
+
+    <section id="defect">
+        <h2>Defects</h2>
+        <button data-request-method="GET" data-request-path="/defect/">GET /defect/</button>
+
+        <h3>POST /defect/</h3>
+        <p>Body must be a JSON list. Create a product and inspection first, then use their IDs.</p>
+        <textarea id="defect-create">[
+  {
+    "defect_code": "D-100",
+    "defect_type": "Scratch",
+    "severity": "LOW",
+    "status": "OPEN",
+    "description": "Small visible scratch",
+    "detected_at": "2026-06-15T10:30:00",
+    "resolved_at": null,
+    "root_cause": null,
+    "corrective_action": null,
+    "product_id": 1,
+    "inspection_id": 1
+  }
+]</textarea>
+        <button data-json-method="POST" data-json-path="/defect/" data-json-textarea="defect-create">Create defects</button>
+
+        <h3>PATCH /defect/&lt;id&gt;</h3>
+        <input id="defect-patch-id" type="number" placeholder="Defect ID">
+        <textarea id="defect-patch">{
+  "status": "IN_PROGRESS",
+  "severity": "MEDIUM",
+  "corrective_action": "Rework part"
+}</textarea>
+        <button data-patch-prefix="/defect/" data-patch-id="defect-patch-id" data-patch-textarea="defect-patch">Update defect</button>
+
+        <h3>DELETE /defect/&lt;id&gt;</h3>
+        <input id="defect-delete-id" type="number" placeholder="Defect ID">
+        <button data-delete-prefix="/defect/" data-delete-id="defect-delete-id">Delete defect</button>
+    </section>
+
+    <section id="report">
+        <h2>Reports</h2>
+        <div class="row"><button data-request-method="GET" data-request-path="/report/quality-summary">GET /report/quality-summary</button></div>
+        <div class="row"><button data-request-method="GET" data-request-path="/report/product-quality">GET /report/product-quality</button></div>
+        <div class="row"><button data-request-method="GET" data-request-path="/report/inspector-performance">GET /report/inspector-performance</button></div>
+        <div class="row"><button data-request-method="GET" data-request-path="/report/quality-alerts">GET /report/quality-alerts</button></div>
+        <div class="row"><button data-request-method="GET" data-request-path="/report/inspection-summary">GET /report/inspection-summary</button></div>
+        <div class="row"><button data-request-method="GET" data-request-path="/report/open-defects">GET /report/open-defects</button></div>
+
+        <h3>GET /report/daily-quality?date=...</h3>
+        <input id="daily-quality-date" type="date">
+        <button id="daily-quality-button">Run daily quality report</button>
+
+        <h3>GET /report/defect-pareto?group_by=...</h3>
+        <select id="defect-pareto-group">
+            <option value="defect_type">defect_type</option>
+            <option value="severity">severity</option>
+            <option value="status">status</option>
+            <option value="product_id">product_id</option>
+            <option value="inspection_id">inspection_id</option>
+        </select>
+        <button id="defect-pareto-button">Run defect pareto report</button>
+
+        <h3>Export reports</h3>
+        <label for="export-format">Format:</label>
+        <select id="export-format">
+            <option value="xlsx">xlsx</option>
+            <option value="csv">csv</option>
+        </select>
+        <div class="row">
+            <a id="export-defects-link" class="download-link" href="/report/export/defects?format=xlsx">Download defects export</a>
+            <a id="export-inspections-link" class="download-link" href="/report/export/inspections?format=xlsx">Download inspections export</a>
+        </div>
+    </section>
+
+    <section id="generic">
+        <h2>Generic endpoint caller</h2>
+        <p>Use this if you want to manually test any route not covered above.</p>
+        <label for="generic-method">Method:</label>
+        <select id="generic-method">
+            <option>GET</option>
+            <option>POST</option>
+            <option>PATCH</option>
+            <option>DELETE</option>
+        </select>
+        <label for="generic-path">Path:</label>
+        <input id="generic-path" type="text" value="/product/">
+        <label for="generic-body">JSON body for POST/PATCH:</label>
+        <textarea id="generic-body">[]</textarea>
+        <button id="generic-call-button">Send request</button>
+    </section>
 </body>
 </html>

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 
 from app.config import Config
 from app.extensions import db, migrate
@@ -15,5 +15,9 @@ def create_app():
     migrate.init_app(app, db)
 
     register_blueprints(app)
+
+    @app.route("/")
+    def index():
+        return render_template("index.html")
 
     return app
